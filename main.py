@@ -6,6 +6,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel, Field
 from typing import Literal
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 BASE_DIR = Path(__file__).resolve().parent
 
 model = joblib.load(BASE_DIR / "Mental_Health_Model.pkl")
@@ -16,6 +17,10 @@ top_countries = [
 ]
 
 app = FastAPI()
+
+@app.get("/")
+def home():
+    return RedirectResponse(url="/index.html")
 
 app.add_middleware(
     CORSMiddleware,
