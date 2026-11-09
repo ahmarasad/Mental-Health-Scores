@@ -10,10 +10,17 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <div class="bg-shapes" aria-hidden="true"><span></span><span></span><span></span></div>
+
   <div class="page">
     <header class="hero">
-      <h1>Mental Health Score Prediction</h1>
-      <p>Enter a student's social media and lifestyle details. The model returns a predicted score.</p>
+      <div class="brand">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+      </div>
+      <div>
+        <h1>Mental Health Score Prediction</h1>
+        <p>Enter a student's social media and lifestyle details to get the model's predicted score and category.</p>
+      </div>
     </header>
 
     <main class="layout">
@@ -21,13 +28,24 @@
       <section class="card form-card" aria-labelledby="form-title">
         <h2 id="form-title" class="visually-hidden">Student details</h2>
 
+        <div class="progress" aria-hidden="true">
+          <div class="progress-text"><span id="progress-label">0 of 12 fields completed</span></div>
+          <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+        </div>
+
         <form id="predict-form" novalidate>
           <fieldset>
-            <legend>About the student</legend>
+            <legend>
+              <span class="legend-icon"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+              About the student
+            </legend>
             <div class="grid">
               <div class="field">
                 <label for="age">Age</label>
-                <input type="number" id="age" name="age" min="10" max="100" step="1" placeholder="e.g. 20" inputmode="numeric" />
+                <div class="input-wrap">
+                  <input type="number" id="age" name="age" min="10" max="100" step="1" placeholder="20" inputmode="numeric" />
+                  <span class="unit">yrs</span>
+                </div>
                 <small class="hint">10 to 100</small>
                 <span class="error-msg" role="alert"></span>
               </div>
@@ -44,7 +62,7 @@
 
               <div class="field">
                 <label for="country">Country</label>
-                <input type="text" id="country" name="country" placeholder="e.g. India" autocomplete="country-name" />
+                <input type="text" id="country" name="country" placeholder="India" autocomplete="country-name" />
                 <span class="error-msg" role="alert"></span>
               </div>
 
@@ -62,7 +80,10 @@
           </fieldset>
 
           <fieldset>
-            <legend>Social media use</legend>
+            <legend>
+              <span class="legend-icon"><svg viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg></span>
+              Social media use
+            </legend>
             <div class="grid">
               <div class="field">
                 <label for="most_Used_Platform">Most used platform</label>
@@ -97,15 +118,21 @@
               </div>
 
               <div class="field">
-                <label for="avg_Daily_Usage_Hours">Average daily usage (hours)</label>
-                <input type="number" id="avg_Daily_Usage_Hours" name="avg_Daily_Usage_Hours" min="0" max="24" step="any" placeholder="e.g. 4.5" inputmode="decimal" />
+                <label for="avg_Daily_Usage_Hours">Average daily usage</label>
+                <div class="input-wrap">
+                  <input type="number" id="avg_Daily_Usage_Hours" name="avg_Daily_Usage_Hours" min="0" max="24" step="any" placeholder="4.5" inputmode="decimal" />
+                  <span class="unit">hrs</span>
+                </div>
                 <small class="hint">0 to 24</small>
                 <span class="error-msg" role="alert"></span>
               </div>
 
               <div class="field">
                 <label for="daily_Unlocks">Daily phone unlocks</label>
-                <input type="number" id="daily_Unlocks" name="daily_Unlocks" min="0" step="1" placeholder="e.g. 60" inputmode="numeric" />
+                <div class="input-wrap">
+                  <input type="number" id="daily_Unlocks" name="daily_Unlocks" min="0" step="1" placeholder="60" inputmode="numeric" />
+                  <span class="unit">times</span>
+                </div>
                 <small class="hint">Whole number, 0 or more</small>
                 <span class="error-msg" role="alert"></span>
               </div>
@@ -113,25 +140,37 @@
           </fieldset>
 
           <fieldset>
-            <legend>Daily routine</legend>
+            <legend>
+              <span class="legend-icon"><svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></span>
+              Daily routine
+            </legend>
             <div class="grid">
               <div class="field">
                 <label for="study_Hours">Study hours</label>
-                <input type="number" id="study_Hours" name="study_Hours" min="0" max="24" step="any" placeholder="e.g. 3" inputmode="decimal" />
+                <div class="input-wrap">
+                  <input type="number" id="study_Hours" name="study_Hours" min="0" max="24" step="any" placeholder="3" inputmode="decimal" />
+                  <span class="unit">hrs</span>
+                </div>
                 <small class="hint">0 to 24</small>
                 <span class="error-msg" role="alert"></span>
               </div>
 
               <div class="field">
-                <label for="physical_Activity_Hours">Physical activity hours</label>
-                <input type="number" id="physical_Activity_Hours" name="physical_Activity_Hours" min="0" max="24" step="any" placeholder="e.g. 1" inputmode="decimal" />
+                <label for="physical_Activity_Hours">Physical activity</label>
+                <div class="input-wrap">
+                  <input type="number" id="physical_Activity_Hours" name="physical_Activity_Hours" min="0" max="24" step="any" placeholder="1" inputmode="decimal" />
+                  <span class="unit">hrs</span>
+                </div>
                 <small class="hint">0 to 24</small>
                 <span class="error-msg" role="alert"></span>
               </div>
 
               <div class="field">
-                <label for="sleep_Hours_Per_Night">Sleep hours per night</label>
-                <input type="number" id="sleep_Hours_Per_Night" name="sleep_Hours_Per_Night" min="0" max="24" step="any" placeholder="e.g. 7" inputmode="decimal" />
+                <label for="sleep_Hours_Per_Night">Sleep per night</label>
+                <div class="input-wrap">
+                  <input type="number" id="sleep_Hours_Per_Night" name="sleep_Hours_Per_Night" min="0" max="24" step="any" placeholder="7" inputmode="decimal" />
+                  <span class="unit">hrs</span>
+                </div>
                 <small class="hint">0 to 24</small>
                 <span class="error-msg" role="alert"></span>
               </div>
@@ -164,7 +203,7 @@
         <!-- Idle -->
         <div class="state state-idle" data-state="idle">
           <div class="ring-placeholder" aria-hidden="true"></div>
-          <p>Fill in the form and choose <strong>Predict score</strong>. The result appears here.</p>
+          <p>Fill in the form and choose <strong>Predict score</strong>. Your result appears here.</p>
         </div>
 
         <!-- Loading -->
@@ -174,15 +213,9 @@
         </div>
 
         <!-- Success -->
-        <div class="state state-success" data-state="success" hidden>
+        <div class="state state-success" data-state="success" data-category="none" hidden>
           <div class="ring-wrap">
             <svg class="ring" viewBox="0 0 200 200" aria-hidden="true">
-              <defs>
-                <linearGradient id="ringGradient" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%" stop-color="#6fc4b5" />
-                  <stop offset="100%" stop-color="#7c7fd6" />
-                </linearGradient>
-              </defs>
               <circle class="ring-track" cx="100" cy="100" r="88" />
               <circle class="ring-bar" id="ring-bar" cx="100" cy="100" r="88" />
             </svg>
@@ -190,7 +223,22 @@
               <span class="score" id="score-value">0.00</span>
             </div>
           </div>
-          <p class="result-note">Score returned by the model. The ring marks a completed prediction and does not represent a scale.</p>
+
+          <span class="category-badge" id="category-badge">
+            <span class="dot" aria-hidden="true"></span>
+            <span id="category-label">Category</span>
+          </span>
+          <p class="category-explain" id="category-explain"></p>
+
+          <div class="scale" id="scale" aria-hidden="true">
+            <div class="scale-track">
+              <div class="scale-bar" id="scale-bar"></div>
+              <div class="scale-marker" id="scale-marker"></div>
+            </div>
+            <div class="scale-ticks" id="scale-ticks"></div>
+          </div>
+
+          <p class="disclaimer">Educational ML-based estimate, not a medical diagnosis.</p>
         </div>
 
         <!-- Error -->

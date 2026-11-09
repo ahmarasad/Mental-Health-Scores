@@ -1,7 +1,50 @@
 "use strict";
 
-const API_URL = "/predict";
+const API_URL = "http://127.0.0.1:8000/predict";
 const REQUEST_TIMEOUT_MS = 20000;
+
+/*
+  SCORE SCALE AND CATEGORIES
+  ---------------------------------------------------------------
+  min / max : lowest and highest Mental Health Score in your dataset
+  from      : the score where each category starts (inclusive).
+              Low starts at min, so it needs no value.
+
+  The three "from" values below split the range 3.6 to 9.4 into four
+  equal parts. That is a simple default chosen for this UI, not a
+  clinical or dataset-defined cutoff. Change the numbers if you have
+  your own boundaries.
+*/
+const SCORE_SCALE = { min: 3.6, max: 9.4 };
+
+const CATEGORIES = [
+  {
+    id: "low",
+    label: "Low",
+    from: null,
+    explanation: "This estimate falls in the lowest band of the dataset's score range. It reflects patterns the model learned from its data and is not an assessment of any condition.",
+  },
+  {
+    id: "medium",
+    label: "Medium",
+    from: 5.05,
+    explanation: "This estimate falls in the lower-middle band of the dataset's score range. It reflects patterns the model learned from its data and is not an assessment of any condition.",
+  },
+  {
+    id: "good",
+    label: "Good",
+    from: 6.5,
+    explanation: "This estimate falls in the upper-middle band of the dataset's score range. It reflects patterns the model learned from its data and is not an assessment of any condition.",
+  },
+  {
+    id: "very-good",
+    label: "Very Good",
+    from: 7.95,
+    explanation: "This estimate falls in the highest band of the dataset's score range. It reflects patterns the model learned from its data and is not an assessment of any condition.",
+  },
+];
+
+const RING_CIRCUMFERENCE = 552.92; // 2 * PI * 88, matches the SVG circle
 
 /*
   Each entry maps a form control (id) to the exact JSON key your
@@ -23,15 +66,24 @@ const FIELDS = [
   { key: "stress_Level",            label: "Stress level",              type: "select" },
 ];
 
-const form       = document.getElementById("predict-form");
-const submitBtn  = document.getElementById("submit-btn");
-const resetBtn   = document.getElementById("reset-btn");
-const retryBtn   = document.getElementById("retry-btn");
-const states     = document.querySelectorAll(".state");
-const scoreEl    = document.getElementById("score-value");
-const ringBar    = document.getElementById("ring-bar");
-const errorText  = document.getElementById("error-text");
-const resultCard = document.querySelector(".result-card");
+const form          = document.getElementById("predict-form");
+const submitBtn     = document.getElementById("submit-btn");
+const resetBtn      = document.getElementById("reset-btn");
+const retryBtn      = document.getElementById("retry-btn");
+const states        = document.querySelectorAll(".state");
+const successEl     = document.querySelector(".state-success");
+const scoreEl       = document.getElementById("score-value");
+const ringBar       = document.getElementById("ring-bar");
+const errorText     = document.getElementById("error-text");
+const resultCard    = document.querySelector(".result-card");
+const badgeLabel    = document.getElementById("category-label");
+const explainEl     = document.getElementById("category-explain");
+const scaleEl       = document.getElementById("scale");
+const scaleBar      = document.getElementById("scale-bar");
+const scaleMarker   = document.getElementById("scale-marker");
+const scaleTicks    = document.getElementById("scale-ticks");
+const progressFill  = document.getElementById("progress-fill");
+const progressLabel = document.getElementById("progress-label");
 
 let countUpFrame = null;
 
@@ -45,6 +97,13 @@ function showState(name) {
 function setLoading(isLoading) {
   submitBtn.disabled = isLoading;
   submitBtn.textContent = isLoading ? "Predicting…" : "Predict score";
+}
+
+/* ---------- Progress ---------- */
+function updateProgress() {
+  const filled = FIELDS.filter((f) => getField(f.key).value.trim() !== "").length;
+  progressFill.style.width = `${(filled / FIELDS.length) * 100}%`;
+  progressLabel.textContent = `${filled} of ${FIELDS.length} fields completed`;
 }
 
 /* ---------- Validation ---------- */
@@ -82,8 +141,7 @@ function validateField(field) {
       : `Enter ${field.label.toLowerCase()}.`;
   }
 
-  if (field.type === "text") return null;
-  if (field.type === "select") return null;
+  if (field.type === "text" || field.type === "select") return null;
 
   const num = Number(raw);
   if (!Number.isFinite(num)) return `${field.label} must be a number.`;
@@ -119,11 +177,8 @@ function buildPayload() {
   const payload = {};
   FIELDS.forEach((field) => {
     const raw = getField(field.key).value.trim();
-    if (field.type === "int" || field.type === "float") {
-      payload[field.key] = Number(raw);
-    } else {
-      payload[field.key] = raw;
-    }
+    payload[field.key] =
+      field.type === "int" || field.type === "float" ? Number(raw) : raw;
   });
   return payload;
 }
@@ -163,6 +218,54 @@ function showError(message) {
   showState("error");
 }
 
+/* ---------- Categories ---------- */
+function scaleIsConfigured() {
+  const { min, max } = SCORE_SCALE;
+  const values = [min, ...CATEGORIES.slice(1).map((c) => c.from), max];
+  return (
+    values.every(Number.isFinite) &&
+    min < max &&
+    values.every((v, i) => i === 0 || v >= values[i - 1])
+  );
+}
+
+function categorize(score) {
+  if (!scaleIsConfigured()) return null;
+  let match = CATEGORIES[0];
+  CATEGORIES.slice(1).forEach((c) => {
+    if (score >= c.from) match = c;
+  });
+  return match;
+}
+
+function pctOf(value) {
+  const { min, max } = SCORE_SCALE;
+  return Math.min(Math.max((value - min) / (max - min), 0), 1) * 100;
+}
+
+/* Draws the four coloured bands and their boundary numbers. */
+function buildScale() {
+  const { min, max } = SCORE_SCALE;
+  const starts = [min, ...CATEGORIES.slice(1).map((c) => c.from), max];
+
+  scaleBar.innerHTML = "";
+  CATEGORIES.forEach((cat, i) => {
+    const seg = document.createElement("div");
+    seg.className = "scale-seg";
+    seg.dataset.c = cat.id;
+    seg.style.flex = String(starts[i + 1] - starts[i]);
+    scaleBar.appendChild(seg);
+  });
+
+  scaleTicks.innerHTML = "";
+  starts.forEach((value) => {
+    const tick = document.createElement("span");
+    tick.style.left = `${pctOf(value)}%`;
+    tick.textContent = String(value);
+    scaleTicks.appendChild(tick);
+  });
+}
+
 /* ---------- Result display ---------- */
 function animateScore(target) {
   if (countUpFrame) cancelAnimationFrame(countUpFrame);
@@ -175,13 +278,14 @@ function animateScore(target) {
     return;
   }
 
+  const from = scaleIsConfigured() ? SCORE_SCALE.min : 0;
   const duration = 1300;
   const start = performance.now();
 
   function tick(now) {
     const t = Math.min((now - start) / duration, 1);
     const eased = 1 - Math.pow(1 - t, 3);
-    scoreEl.textContent = (target * eased).toFixed(2);
+    scoreEl.textContent = (from + (target - from) * eased).toFixed(2);
     if (t < 1) {
       countUpFrame = requestAnimationFrame(tick);
     } else {
@@ -192,13 +296,41 @@ function animateScore(target) {
 }
 
 function showResult(score) {
+  const category = categorize(score);
+
+  if (category) {
+    successEl.dataset.category = category.id;
+    badgeLabel.textContent = category.label;
+    explainEl.textContent = category.explanation;
+    ringBar.style.setProperty(
+      "--ring-offset",
+      String(RING_CIRCUMFERENCE * (1 - pctOf(score) / 100))
+    );
+    buildScale();
+    scaleEl.hidden = false;
+  } else {
+    successEl.dataset.category = "none";
+    badgeLabel.textContent = "Category unavailable";
+    explainEl.textContent = "Add the score range and category boundaries in script.js to see a category.";
+    ringBar.style.setProperty("--ring-offset", "0");
+    scaleEl.hidden = true;
+  }
+
   showState("success");
 
-  // Restart the ring animation. The ring marks completion only; it is
-  // not scaled to the score because no score range is defined.
+  // Restart the ring animation.
   ringBar.classList.remove("animate");
   void ringBar.getBoundingClientRect();
   ringBar.classList.add("animate");
+
+  // Slide the scale marker from the left edge to the score position.
+  if (category) {
+    scaleMarker.style.transition = "none";
+    scaleMarker.style.left = "0%";
+    void scaleMarker.getBoundingClientRect();
+    scaleMarker.style.transition = "";
+    scaleMarker.style.left = `${pctOf(score)}%`;
+  }
 
   animateScore(score);
 }
@@ -270,6 +402,7 @@ function handleReset() {
   scoreEl.textContent = "0.00";
   showState("idle");
   setLoading(false);
+  updateProgress();
   getField("age").focus();
 }
 
@@ -281,9 +414,14 @@ retryBtn.addEventListener("click", () => {
   form.requestSubmit();
 });
 
-// Clear a field's error as soon as the person edits it.
+// Clear a field's error and update progress as soon as the person edits it.
 FIELDS.forEach((field) => {
   const control = getField(field.key);
   const evt = field.type === "select" ? "change" : "input";
-  control.addEventListener(evt, () => clearFieldError(field.key));
+  control.addEventListener(evt, () => {
+    clearFieldError(field.key);
+    updateProgress();
+  });
 });
+
+updateProgress();
