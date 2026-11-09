@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mental Health Score Prediction</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <h1>Mental Health Score Prediction</h1>
+      <p>Enter a student's social media and lifestyle details. The model returns a predicted score.</p>
+    </header>
+
+    <main class="layout">
+      <!-- ============ FORM ============ -->
+      <section class="card form-card" aria-labelledby="form-title">
+        <h2 id="form-title" class="visually-hidden">Student details</h2>
+
+        <form id="predict-form" novalidate>
+          <fieldset>
+            <legend>About the student</legend>
+            <div class="grid">
+              <div class="field">
+                <label for="age">Age</label>
+                <input type="number" id="age" name="age" min="10" max="100" step="1" placeholder="e.g. 20" inputmode="numeric" />
+                <small class="hint">10 to 100</small>
+                <span class="error-msg" role="alert"></span>
+              </div>
+
+              <div class="field">
+                <label for="gender">Gender</label>
+                <select id="gender" name="gender">
+                  <option value="" selected disabled>Select gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                </select>
+                <span class="error-msg" role="alert"></span>
+              </div>
+
+              <div class="field">
+                <label for="country">Country</label>
+                <input type="text" id="country" name="country" placeholder="e.g. India" autocomplete="country-name" />
+                <span class="error-msg" role="alert"></span>
+              </div>
+
+              <div class="field">
+                <label for="academic_Level">Academic level</label>
+                <select id="academic_Level" name="academic_Level">
+                  <option value="" selected disabled>Select level</option>
+                  <option value="Undergraduate">Undergraduate</option>
+                  <option value="Graduate">Graduate</option>
+                  <option value="High School">High School</option>
+                </select>
+                <span class="error-msg" role="alert"></span>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Social media use</legend>
+            <div class="grid">
+              <div class="field">
+                <label for="most_Used_Platform">Most used platform</label>
+                <select id="most_Used_Platform" name="most_Used_Platform">
+                  <option value="" selected disabled>Select platform</option>
+                  <option value="Facebook">Facebook</option>
+                  <option value="LinkedIn">LinkedIn</option>
+                  <option value="Instagram">Instagram</option>
+                  <option value="Snapchat">Snapchat</option>
+                  <option value="Twitter">Twitter</option>
+                  <option value="YouTube">YouTube</option>
+                  <option value="TikTok">TikTok</option>
+                  <option value="LINE">LINE</option>
+                  <option value="KakaoTalk">KakaoTalk</option>
+                  <option value="VKontakte">VKontakte</option>
+                  <option value="WhatsApp">WhatsApp</option>
+                  <option value="WeChat">WeChat</option>
+                </select>
+                <span class="error-msg" role="alert"></span>
+              </div>
+
+              <div class="field">
+                <label for="purpose_Of_Use">Purpose of use</label>
+                <select id="purpose_Of_Use" name="purpose_Of_Use">
+                  <option value="" selected disabled>Select purpose</option>
+                  <option value="Networking">Networking</option>
+                  <option value="Education">Education</option>
+                  <option value="Entertainment">Entertainment</option>
+                  <option value="News">News</option>
+                </select>
+                <span class="error-msg" role="alert"></span>
+              </div>
+
+              <div class="field">
+                <label for="avg_Daily_Usage_Hours">Average daily usage (hours)</label>
+                <input type="number" id="avg_Daily_Usage_Hours" name="avg_Daily_Usage_Hours" min="0" max="24" step="any" placeholder="e.g. 4.5" inputmode="decimal" />
+                <small class="hint">0 to 24</small>
+                <span class="error-msg" role="alert"></span>
+              </div>
+
+              <div class="field">
+                <label for="daily_Unlocks">Daily phone unlocks</label>
+                <input type="number" id="daily_Unlocks" name="daily_Unlocks" min="0" step="1" placeholder="e.g. 60" inputmode="numeric" />
+                <small class="hint">Whole number, 0 or more</small>
+                <span class="error-msg" role="alert"></span>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Daily routine</legend>
+            <div class="grid">
+              <div class="field">
+                <label for="study_Hours">Study hours</label>
+                <input type="number" id="study_Hours" name="study_Hours" min="0" max="24" step="any" placeholder="e.g. 3" inputmode="decimal" />
+                <small class="hint">0 to 24</small>
+                <span class="error-msg" role="alert"></span>
+              </div>
+
+              <div class="field">
+                <label for="physical_Activity_Hours">Physical activity hours</label>
+                <input type="number" id="physical_Activity_Hours" name="physical_Activity_Hours" min="0" max="24" step="any" placeholder="e.g. 1" inputmode="decimal" />
+                <small class="hint">0 to 24</small>
+                <span class="error-msg" role="alert"></span>
+              </div>
+
+              <div class="field">
+                <label for="sleep_Hours_Per_Night">Sleep hours per night</label>
+                <input type="number" id="sleep_Hours_Per_Night" name="sleep_Hours_Per_Night" min="0" max="24" step="any" placeholder="e.g. 7" inputmode="decimal" />
+                <small class="hint">0 to 24</small>
+                <span class="error-msg" role="alert"></span>
+              </div>
+
+              <div class="field">
+                <label for="stress_Level">Stress level</label>
+                <select id="stress_Level" name="stress_Level">
+                  <option value="" selected disabled>Select stress level</option>
+                  <option value="Low">Low</option>
+                  <option value="Medium">Medium</option>
+                  <option value="High">High</option>
+                  <option value="Very High">Very High</option>
+                </select>
+                <span class="error-msg" role="alert"></span>
+              </div>
+            </div>
+          </fieldset>
+
+          <div class="actions">
+            <button type="submit" id="submit-btn" class="btn btn-primary">Predict score</button>
+            <button type="button" id="reset-btn" class="btn btn-ghost">Reset form</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- ============ RESULT ============ -->
+      <aside class="card result-card" aria-live="polite" aria-labelledby="result-title">
+        <h2 id="result-title">Predicted Mental Health Score</h2>
+
+        <!-- Idle -->
+        <div class="state state-idle" data-state="idle">
+          <div class="ring-placeholder" aria-hidden="true"></div>
+          <p>Fill in the form and choose <strong>Predict score</strong>. The result appears here.</p>
+        </div>
+
+        <!-- Loading -->
+        <div class="state state-loading" data-state="loading" hidden>
+          <div class="spinner" aria-hidden="true"></div>
+          <p>Predicting…</p>
+        </div>
+
+        <!-- Success -->
+        <div class="state state-success" data-state="success" hidden>
+          <div class="ring-wrap">
+            <svg class="ring" viewBox="0 0 200 200" aria-hidden="true">
+              <defs>
+                <linearGradient id="ringGradient" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#6fc4b5" />
+                  <stop offset="100%" stop-color="#7c7fd6" />
+                </linearGradient>
+              </defs>
+              <circle class="ring-track" cx="100" cy="100" r="88" />
+              <circle class="ring-bar" id="ring-bar" cx="100" cy="100" r="88" />
+            </svg>
+            <div class="ring-center">
+              <span class="score" id="score-value">0.00</span>
+            </div>
+          </div>
+          <p class="result-note">Score returned by the model. The ring marks a completed prediction and does not represent a scale.</p>
+        </div>
+
+        <!-- Error -->
+        <div class="state state-error" data-state="error" hidden>
+          <div class="error-icon" aria-hidden="true">!</div>
+          <h3>Prediction failed</h3>
+          <p id="error-text">Something went wrong.</p>
+          <button type="button" id="retry-btn" class="btn btn-ghost">Try again</button>
+        </div>
+      </aside>
+    </main>
+
+    <footer class="foot">Connected to the FastAPI server at 127.0.0.1:8000</footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
